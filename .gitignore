@@ -1,0 +1,14 @@
+# Archivos de configuración con datos sensibles
+/includes/conexion.php
+
+# Logs y archivos temporales
+*.log
+tmp/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Entorno de desarrollo
+.vscode/
+.idea/
