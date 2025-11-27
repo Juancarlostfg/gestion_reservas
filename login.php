@@ -17,6 +17,10 @@ if ($_POST) {
     
     if ($result->num_rows > 0) {
         $usuario = $result->fetch_assoc();
+        var_dump($usuario['password']); // muestra el hash que llegó desde BD
+        var_dump(password_verify($password, $usuario['password'])); // true/false
+
+        
         if (password_verify($password, $usuario['password'])) {
             $_SESSION['usuario_id'] = $usuario['id'];
             $_SESSION['usuario_nombre'] = $usuario['nombre'];

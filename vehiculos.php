@@ -124,12 +124,12 @@ $usuario_rol = $_SESSION['usuario_rol'];
 <div class="vehiculo-card" data-category="economico">
     <div class="vehiculo-image">
         <img src="img/fiat-panda.jpg" 
-             alt="Fiat Panda" 
+             alt="Fiat Panda o similar" 
              style="width: 100%; height: 100%; object-fit: cover;">
     </div>
     <div class="vehiculo-content">
         <div style="display: flex; justify-content: between; align-items: start; margin-bottom: 15px;">
-            <h3>Fiat Panda</h3>
+            <h3>Fiat Panda o similar </h3>
             <span class="badge" style="background: #27ae60; color: white;">Económico</span>
         </div>
         
@@ -168,12 +168,12 @@ $usuario_rol = $_SESSION['usuario_rol'];
 <div class="vehiculo-card" data-category="compacto">
     <div class="vehiculo-image">
         <img src="img/golf.jpg" 
-             alt="Volkswagen Golf" 
+             alt="Volkswagen Golf o similar" 
              style="width: 100%; height: 100%; object-fit: cover;">
     </div>
     <div class="vehiculo-content">
         <div style="display: flex; justify-content: between; align-items: start; margin-bottom: 15px;">
-            <h3>Volkswagen Golf</h3>
+            <h3>Volkswagen Golf o similar </h3>
             <span class="badge" style="background: #9b59b6; color: white;">Compacto</span>
         </div>
         
@@ -212,12 +212,12 @@ $usuario_rol = $_SESSION['usuario_rol'];
 <div class="vehiculo-card" data-category="sedan">
     <div class="vehiculo-image">
         <img src="img/corolla.jpg" 
-             alt="Toyota Corolla" 
+             alt="Toyota Corolla o similar" 
              style="width: 100%; height: 100%; object-fit: cover;">
     </div>
     <div class="vehiculo-content">
         <div style="display: flex; justify-content: between; align-items: start; margin-bottom: 15px;">
-            <h3>Toyota Corolla</h3>
+            <h3>Toyota Corolla o similar </h3>
             <span class="badge" style="background: #e74c3c; color: white;">Sedán</span>
         </div>
         
@@ -256,12 +256,12 @@ $usuario_rol = $_SESSION['usuario_rol'];
 <div class="vehiculo-card" data-category="suv">
     <div class="vehiculo-image">
         <img src="img/qashqai.jpg" 
-             alt="Nissan Qashqai" 
+             alt="Nissan Qashqai o similar" 
              style="width: 100%; height: 100%; object-fit: cover;">
     </div>
     <div class="vehiculo-content">
         <div style="display: flex; justify-content: between; align-items: start; margin-bottom: 15px;">
-            <h3>Nissan Qashqai</h3>
+            <h3>Nissan Qashqai o similar </h3>
             <span class="badge" style="background: #f39c12; color: white;">SUV</span>
         </div>
         
@@ -300,12 +300,12 @@ $usuario_rol = $_SESSION['usuario_rol'];
 <div class="vehiculo-card" data-category="lujo">
     <div class="vehiculo-image">
         <img src="img/bmw-serie3.jpg" 
-             alt="BMW Serie 3" 
+             alt="BMW Serie 3 o similar" 
              style="width: 100%; height: 100%; object-fit: cover;">
     </div>
     <div class="vehiculo-content">
         <div style="display: flex; justify-content: between; align-items: start; margin-bottom: 15px;">
-            <h3>BMW Serie 3</h3>
+            <h3>BMW Serie 3 o similar </h3>
             <span class="badge" style="background: #34495e; color: white;">Lujo</span>
         </div>
         
@@ -344,12 +344,12 @@ $usuario_rol = $_SESSION['usuario_rol'];
 <div class="vehiculo-card" data-category="lujo">
     <div class="vehiculo-image">
         <img src="img/audi-tt.jpg" 
-             alt="Audi TT" 
+             alt="Audi TT o similar" 
              style="width: 100%; height: 100%; object-fit: cover;">
     </div>
     <div class="vehiculo-content">
         <div style="display: flex; justify-content: between; align-items: start; margin-bottom: 15px;">
-            <h3>Audi TT</h3>
+            <h3>Audi TT o similar </h3>
             <span class="badge" style="background: #e74c3c; color: white;">Deportivo</span>
         </div>
         
@@ -396,7 +396,7 @@ $usuario_rol = $_SESSION['usuario_rol'];
                 </div>
             </div>
         </div>
-
+o similar
         <!-- Información Adicional -->
         <div class="form-container">
             <h3 style="text-align: center; margin-bottom: 30px; color: #2c3e50;">💡 Información Importante</h3>

@@ -2,64 +2,92 @@
 session_start();
 include 'includes/conexion.php';
 
-if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_rol'] != 'cliente') {
+// SOLO se exige estar logueado
+if (!isset($_SESSION['usuario_id'])) {
     header("Location: login.php");
     exit();
 }
 
-// Preseleccionar tipo de vehículo si viene de la página de vehículos
-$tipo_preseleccionado = '';
-$modelo_preseleccionado = '';
-if (isset($_GET['tipo'])) {
-    $tipo_preseleccionado = $_GET['tipo'];
-}
-if (isset($_GET['modelo'])) {
-    $modelo_preseleccionado = $_GET['modelo'];
-}
+$es_empleado = ($_SESSION['usuario_rol'] === 'empleado');
+$es_cliente  = ($_SESSION['usuario_rol'] === 'cliente');
+
+// Preselección desde vehículos
+$tipo_preseleccionado = $_GET['tipo'] ?? '';
+$modelo_preseleccionado = $_GET['modelo'] ?? '';
 
 $mensaje = "";
 
+// 🔹 Si es empleado, cargamos la lista de clientes para el desplegable
+$lista_clientes = [];
+if ($es_empleado) {
+    $sql_clientes = "SELECT id, nombre, email FROM usuarios WHERE rol='cliente' ORDER BY nombre ASC";
+    $res = $conexion->query($sql_clientes);
+    if ($res) $lista_clientes = $res->fetch_all(MYSQLI_ASSOC);
+}
+
 if ($_POST) {
+
     $modelo_vehiculo = $_POST['modelo_vehiculo'];
-    $tipo_vehiculo = $_POST['tipo_vehiculo'];
-    $fecha_inicio = $_POST['fecha_inicio'];
-    $fecha_fin = $_POST['fecha_fin'];
-    $ubicacion = $_POST['ubicacion'];
-    $observaciones = $_POST['observaciones'];
-    $usuario_id = $_SESSION['usuario_id'];
-    
-   
+    $tipo_vehiculo   = $_POST['tipo_vehiculo'];
+    $fecha_inicio    = $_POST['fecha_inicio'];
+    $fecha_fin       = $_POST['fecha_fin'];
+    $ubicacion       = $_POST['ubicacion'];
+    $observaciones   = $_POST['observaciones'] ?? '';
+
+    // 🔹 Cliente: usa su propio ID
+    // 🔹 Empleado: elige un cliente desde el formulario
+    $usuario_id = $es_empleado ? intval($_POST['cliente_id']) : $_SESSION['usuario_id'];
+
+    // Calcular precio
     $dias = (strtotime($fecha_fin) - strtotime($fecha_inicio)) / (60 * 60 * 24);
+
     $precios = [
         'economico' => 30, 
-        'compacto' => 40, 
-        'sedan' => 50, 
-        'suv' => 70, 
-        'lujo' => 100,
+        'compacto'  => 40, 
+        'sedan'     => 50, 
+        'suv'       => 70, 
+        'lujo'      => 100,
         'deportivo' => 120
     ];
+
     $precio_total = $dias * $precios[$tipo_vehiculo];
-    
-    $sql = "INSERT INTO reservas (modelo_vehiculo, tipo_vehiculo, fecha_inicio, fecha_fin, ubicacion, observaciones, usuario_id, precio_total) 
-            VALUES ('$modelo_vehiculo', '$tipo_vehiculo', '$fecha_inicio', '$fecha_fin', '$ubicacion', '$observaciones', $usuario_id, $precio_total)";
-    
-    if ($conexion->query($sql) === TRUE) {
-        $mensaje = "<div style='color: green; padding: 15px; background: #d4edda; border-radius: 5px; border: 1px solid #c3e6cb; margin-bottom: 20px;'>
+
+    // 🔹 Insert REAL a la tabla (usando los nombres correctos de tu BD)
+    $sql = "INSERT INTO reservas (
+                modelo_vehiculo,
+                tipo_vehiculo,
+                fecha_inicio,
+                fecha_fin,
+                ubicacion,
+                observaciones,
+                usuario_id,
+                precio_total
+            ) VALUES (
+                '$modelo_vehiculo',
+                '$tipo_vehiculo',
+                '$fecha_inicio',
+                '$fecha_fin',
+                '$ubicacion',
+                '$observaciones',
+                $usuario_id,
+                $precio_total
+            )";
+
+    if ($conexion->query($sql)) {
+        $mensaje = "<div style='background:#d4edda;color:#155724;padding:15px;border-radius:6px;margin-bottom:20px;'>
                         ✅ <strong>¡Reserva creada exitosamente!</strong><br>
                         Precio total: <strong>€$precio_total</strong> para $dias días.
                     </div>";
     } else {
-        $mensaje = "<div style='color: #721c24; padding: 15px; background: #f8d7da; border-radius: 5px; border: 1px solid #f5c6cb; margin-bottom: 20px;'>
-                        ❌ <strong>Error:</strong> " . $conexion->error . "
+        $mensaje = "<div style='background:#f8d7da;color:#721c24;padding:15px;border-radius:6px;margin-bottom:20px;'>
+                        ❌ Error: " . $conexion->error . "
                     </div>";
     }
 }
 
-
 $fecha_hoy = date('Y-m-d');
 $fecha_manana = date('Y-m-d', strtotime('+1 day'));
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -70,7 +98,7 @@ $fecha_manana = date('Y-m-d', strtotime('+1 day'));
 </head>
 <body>
     <div class="container fade-in">
-        
+
         <header class="header">
             <nav class="navbar">
                 <div class="logo">
@@ -85,142 +113,147 @@ $fecha_manana = date('Y-m-d', strtotime('+1 day'));
             </nav>
         </header>
 
-        <!-- Hero Section -->
-        <section class="hero">
-            <h1>Nueva Reserva 🚗</h1>
-            <p>Completa los datos para reservar tu vehículo ideal</p>
-        </section>
+        <!-- HERO -->
+  <section style="
+    background-image:url('img/flota.jpg');
+    background-size:cover;
+    background-position:center;
+    height:260px;
+    border-radius:14px;
+    position:relative;
+    overflow:hidden;
+">
+    <div style="
+        position:absolute;
+        inset:0;
+        background:linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.45));
+    "></div>
+
+    <div style="
+        position:relative;
+        z-index:2;
+        text-align:center;
+        top:50%;
+        transform:translateY(-50%);
+        color:white;
+        text-shadow:0 4px 12px rgba(0,0,0,0.7);
+    ">
+        <h1>Nueva Reserva 🚗</h1>
+        <p>Completa los datos para reservar un vehículo</p>
+    </div>
+</section>
+
 
         <?php echo $mensaje; ?>
 
         <div class="form-container">
-            <form method="post" id="formReserva">
+            <form method="post">
+
+                <!-- 🔹 SOLO PARA EMPLEADOS: selector de cliente -->
+                <?php if ($es_empleado): ?>
+                    <div class="form-group">
+                        <label for="cliente_id">👥 Cliente:</label>
+                        <select name="cliente_id" id="cliente_id" class="form-control" required>
+                            <option value="">Seleccione un cliente...</option>
+                            <?php foreach($lista_clientes as $c): ?>
+                                <option value="<?php echo $c['id']; ?>">
+                                    <?php echo $c['nombre'] . " (" . $c['email'] . ")"; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                <?php endif; ?>
+
                 <div class="form-group">
                     <label for="modelo_vehiculo">🚗 Modelo del Vehículo:</label>
-                    <input type="text" id="modelo_vehiculo" name="modelo_vehiculo" 
-                           placeholder="Ej: Toyota Corolla, BMW X3, Audi TT..." 
-                           required
-                           value="<?php echo isset($_POST['modelo_vehiculo']) ? $_POST['modelo_vehiculo'] : $modelo_preseleccionado; ?>"
+                    <input type="text" name="modelo_vehiculo" required
+                           value="<?php echo $modelo_preseleccionado; ?>"
+                           placeholder="Ej: Toyota Corolla, Audi TT..."
                            class="form-control">
                 </div>
 
                 <div class="form-group">
                     <label for="tipo_vehiculo">🏷️ Tipo de Vehículo:</label>
-                    <select id="tipo_vehiculo" name="tipo_vehiculo" required onchange="calcularPrecio()" class="form-control">
-                        <option value="economico" <?php echo $tipo_preseleccionado == 'economico' ? 'selected' : ''; ?>>Económico</option>
-                        <option value="compacto" <?php echo $tipo_preseleccionado == 'compacto' ? 'selected' : ''; ?>>Compacto</option>
-                        <option value="sedan" <?php echo ($tipo_preseleccionado == 'sedan' || empty($tipo_preseleccionado)) ? 'selected' : ''; ?>>Sedán</option>
-                        <option value="suv" <?php echo $tipo_preseleccionado == 'suv' ? 'selected' : ''; ?>>SUV</option>
-                        <option value="lujo" <?php echo $tipo_preseleccionado == 'lujo' ? 'selected' : ''; ?>>Lujo</option>
-                        <option value="deportivo" <?php echo $tipo_preseleccionado == 'deportivo' ? 'selected' : ''; ?>>Deportivo</option>
+                    <select name="tipo_vehiculo" id="tipo_vehiculo" class="form-control" onchange="calcularPrecio()">
+                        <option value="economico">Económico (€30/día)</option>
+                        <option value="compacto">Compacto (€40/día)</option>
+                        <option value="sedan" selected>Sedán (€50/día)</option>
+                        <option value="suv">SUV (€70/día)</option>
+                        <option value="lujo">Lujo (€100/día)</option>
+                        <option value="deportivo">Deportivo (€120/día)</option>
                     </select>
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; text-align: center;">
-                        <small style="color: #666;">💳 €30/día</small>
-                        <small style="color: #666;">💳 €40/día</small>
-                        <small style="color: #666;">💳 €50/día</small>
-                        <small style="color: #666;">💳 €70/día</small>
-                        <small style="color: #666;">💳 €100/día</small>
-                        <small style="color: #666;">💳 €120/día</small>
-                    </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
+                <div class="form-row">
                     <div class="form-group">
-                        <label for="fecha_inicio">📅 Fecha de Inicio:</label>
-                        <input type="date" id="fecha_inicio" name="fecha_inicio" 
-                               required 
-                               min="<?php echo $fecha_hoy; ?>"
-                               value="<?php echo isset($_POST['fecha_inicio']) ? $_POST['fecha_inicio'] : $fecha_hoy; ?>"
-                               onchange="calcularPrecio()"
-                               class="form-control">
+                        <label for="fecha_inicio">📅 Fecha Inicio:</label>
+                        <input type="date" name="fecha_inicio" min="<?php echo $fecha_hoy; ?>"
+                               value="<?php echo $fecha_hoy; ?>" class="form-control"
+                               onchange="calcularPrecio()" required>
                     </div>
+
                     <div class="form-group">
-                        <label for="fecha_fin">📅 Fecha de Fin:</label>
-                        <input type="date" id="fecha_fin" name="fecha_fin" 
-                               required
-                               min="<?php echo $fecha_manana; ?>"
-                               value="<?php echo isset($_POST['fecha_fin']) ? $_POST['fecha_fin'] : $fecha_manana; ?>"
-                               onchange="calcularPrecio()"
-                               class="form-control">
+                        <label for="fecha_fin">📅 Fecha Fin:</label>
+                        <input type="date" name="fecha_fin" min="<?php echo $fecha_manana; ?>"
+                               value="<?php echo $fecha_manana; ?>" class="form-control"
+                               onchange="calcularPrecio()" required>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="ubicacion">📍 Ubicación de Recogida:</label>
-                    <select id="ubicacion" name="ubicacion" required class="form-control">
+                    <label for="ubicacion">📍 Ubicación:</label>
+                    <select name="ubicacion" class="form-control">
                         <option value="malaga">Málaga Aeropuerto</option>
                         <option value="madrid">Madrid Centro</option>
                         <option value="barcelona">Barcelona Sants</option>
                         <option value="valencia">Valencia Aeropuerto</option>
                         <option value="sevilla">Sevilla Centro</option>
-                        
                         <option value="bilbao">Bilbao Centro</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="observaciones">📝 Observaciones (opcional):</label>
-                    <textarea id="observaciones" name="observaciones" 
-                              placeholder="Necesito silla infantil, GPS, conductor adicional, etc..."
-                              rows="4" class="form-control"><?php echo isset($_POST['observaciones']) ? $_POST['observaciones'] : ''; ?></textarea>
+                    <label>📝 Observaciones:</label>
+                    <textarea name="observaciones" rows="4" class="form-control"></textarea>
                 </div>
 
-                <div style="background: #e7f3ff; padding: 20px; border-radius: 10px; margin: 25px 0; text-align: center;">
-                    <h3 style="color: #3498db; margin-bottom: 10px;">💰 Precio Estimado</h3>
-                    <div style="font-size: 2em; font-weight: bold; color: #27ae60;" id="precioTexto">€50</div>
-                    <div style="color: #7f8c8d; font-size: 0.9em;" id="detallePrecio">1 día x €50/día (Sedán)</div>
+                <div class="precio-box">
+                    <h3>💰 Precio Estimado</h3>
+                    <div id="precioTexto">€50</div>
+                    <small id="detallePrecio">1 día x €50/día (Sedán)</small>
                 </div>
 
-                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 1.1em;">
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px;">
                     🚗 Confirmar Reserva
                 </button>
             </form>
         </div>
 
-        <!-- Footer -->
         <footer class="footer">
             <p>© 2024 Autos Costa Sol - Tu viaje perfecto comienza aquí</p>
         </footer>
     </div>
 
-    <script>
-        function calcularPrecio() {
-            const fechaInicio = new Date(document.getElementById('fecha_inicio').value);
-            const fechaFin = new Date(document.getElementById('fecha_fin').value);
-            const tipoVehiculo = document.getElementById('tipo_vehiculo').value;
-            
-            const precios = {
-                'economico': 30,
-                'compacto': 40,
-                'sedan': 50,
-                'suv': 70,
-                'lujo': 100,
-                'deportivo': 120
-            };
-            
-            const nombres = {
-                'economico': 'Económico',
-                'compacto': 'Compacto',
-                'sedan': 'Sedán',
-                'suv': 'SUV',
-                'lujo': 'Lujo',
-                'deportivo': 'Deportivo'
-            };
-            
-            if (fechaInicio && fechaFin && fechaFin > fechaInicio) {
-                const dias = Math.ceil((fechaFin - fechaInicio) / (1000 * 60 * 60 * 24));
-                const precioTotal = dias * precios[tipoVehiculo];
-                
-                document.getElementById('precioTexto').textContent = `€${precioTotal}`;
-                document.getElementById('detallePrecio').textContent = 
-                    `${dias} día${dias > 1 ? 's' : ''} x €${precios[tipoVehiculo]}/día (${nombres[tipoVehiculo]})`;
-            }
-        }
-        
-        // Calcular precio inicial al cargar la página
-        document.addEventListener('DOMContentLoaded', function() {
-            calcularPrecio();
-        });
-    </script>
+<script>
+function calcularPrecio() {
+    const inicio = new Date(document.querySelector('[name="fecha_inicio"]').value);
+    const fin    = new Date(document.querySelector('[name="fecha_fin"]').value);
+    const tipo   = document.getElementById('tipo_vehiculo').value;
+
+    const precios = { economico:30, compacto:40, sedan:50, suv:70, lujo:100, deportivo:120 };
+    const nombres = { economico:'Económico', compacto:'Compacto', sedan:'Sedán', suv:'SUV', lujo:'Lujo', deportivo:'Deportivo' };
+
+    if (inicio && fin && fin > inicio) {
+        const dias = Math.ceil((fin - inicio) / (1000*60*60*24));
+        const total = dias * precios[tipo];
+
+        document.getElementById("precioTexto").textContent = `€${total}`;
+        document.getElementById("detallePrecio").textContent = 
+            `${dias} día${dias>1?'s':''} x €${precios[tipo]}/día (${nombres[tipo]})`;
+    }
+}
+document.addEventListener('DOMContentLoaded', calcularPrecio);
+</script>
+
 </body>
 </html>

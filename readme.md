@@ -8,8 +8,8 @@ Sistema de gestión de reservas para empresa de alquiler de vehículos.
 ## 🛠️ Tecnologías
 - PHP
 - MySQL
-- HTML/CSS/JavaScript
-- Bootstrap
+- HTML/CSS
+
 
 ## 🗄️ Base de Datos
 Base de datos: `gestion_reservas`
