@@ -241,7 +241,7 @@ $reservas = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 
         <!-- Footer -->
         <footer class="footer">
-            <p>© 2024 Autos Costa Sol - Panel de Gestión</p>
+            <p>© 2025 Autos Costa Sol - Panel de Gestión</p>
         </footer>
     </div>
 </body>

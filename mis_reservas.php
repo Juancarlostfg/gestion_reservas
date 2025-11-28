@@ -24,7 +24,7 @@ $result = $conexion->query($sql);
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Mis Reservas - Rent a Car Express</title>
+    <title>Mis Reservas - Autos Costa Sol</title>
     <link rel="stylesheet" href="css/estilos.css">
     <style>
         .reserva-card {
@@ -32,13 +32,14 @@ $result = $conexion->query($sql);
             padding: 20px;
             margin: 15px 0;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(214, 212, 212, 0.66);
             border-left: 4px solid #007bff;
         }
         .estado-pendiente { border-left-color: #ffc107; }
         .estado-confirmada { border-left-color: #28a745; }
         .estado-completada { border-left-color: #6c757d; }
         .estado-cancelada { border-left-color: #dc3545; }
+
         .btn { 
             padding: 8px 15px; 
             border-radius: 5px; 
@@ -49,47 +50,98 @@ $result = $conexion->query($sql);
         }
         .btn-confirmar { background: #28a745; color: white; }
         .btn-cancelar { background: #dc3545; color: white; }
+
         .header-actions {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             align-items: center;
             margin-bottom: 20px;
+            gap: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header-actions">
-            <header style="background: #343a40; color: white; padding: 15px; border-radius: 8px; flex: 1;">
-                <h1 style="margin: 0;">
-                    <?php echo $usuario_rol == 'cliente' ? '📋 Mis Reservas' : '📊 Todas las Reservas'; ?>
-                </h1>
-            </header>
-            <div>
-                <a href="dashboard.php" style="background: #6c757d; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none; margin-left: 10px;">
-                    ← Dashboard
-                </a>
-                <?php if ($usuario_rol == 'cliente'): ?>
-                    <a href="crear_reserva.php" style="background: #007bff; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none; margin-left: 10px;">
-                        🚗 Nueva Reserva
-                    </a>
-                <?php else: ?>
-                    <a href="gestion_reservas.php" style="background: #007bff; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none; margin-left: 10px;">
-                        ⚙️ Gestión Avanzada
-                    </a>
-                <?php endif; ?>
+
+        <!-- HERO con reservas.jpg -->
+        <section class="hero" 
+            style="
+                background-image: url('img/reservas.jpg');
+                background-size: cover;
+                background-position: center;
+                border-radius: 14px;
+                height: 260px;
+                position: relative;
+                overflow: hidden;
+            "
+        >
+            <!-- Capa oscura -->
+            <div style="
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        rgba(0,0,0,0.15),
+        rgba(0,0,0,0.35)
+    );
+"></div>
+
+
+            <!-- Contenido centrado con cajita -->
+            <div style="
+                position: relative;
+                z-index: 2;
+                text-align: center;
+                top: 50%;
+                transform: translateY(-50%);
+                ">
+            "<div style="
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: 16px;
+    background: rgba(236, 236, 236, 0.45);
+    backdrop-filter: blur(4px);
+">
+    <h1 style="margin:0; font-size:28px; color:#ffffff; text-shadow:0 4px 12px rgba(0,0,0,0.9);">
+        Mis Reservas 
+    </h1>
+    <p style="margin:6px 0 0; color:#e5e7eb; text-shadow:0 3px 8px rgba(0,0,0,0.8);">
+        Consulta el estado de todas tus reservas
+    </p>
+</div>
+
             </div>
+        </section>
+
+        <!-- Botones de navegación -->
+        <div class="header-actions">
+            <a href="dashboard.php" 
+               style="background: #6c757d; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none;">
+                ← Dashboard
+            </a>
+
+            <?php if ($usuario_rol == 'cliente'): ?>
+                <a href="crear_reserva.php" 
+                   style="background: #007bff; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none;">
+                    🚗 Nueva Reserva
+                </a>
+            <?php else: ?>
+                <a href="gestion_reservas.php" 
+                   style="background: #007bff; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none;">
+                    ⚙️ Gestión Avanzada
+                </a>
+            <?php endif; ?>
         </div>
 
+        <!-- Listado de reservas -->
         <?php if ($result->num_rows > 0): ?>
-            <div style="margin-top: 20px;">
+            <div style="margin-top: 10px;">
                 <?php while($reserva = $result->fetch_assoc()): ?>
                     <div class="reserva-card estado-<?php echo $reserva['estado_reserva']; ?>">
                         <div style="display: flex; justify-content: space-between; align-items: start;">
                             <div style="flex: 1;">
                                 <h3 style="margin: 0 0 10px 0; color: #333;">🚗 <?php echo $reserva['modelo_vehiculo']; ?></h3>
                                 <p><strong>📅 Fechas:</strong> <?php echo $reserva['fecha_inicio']; ?> al <?php echo $reserva['fecha_fin']; ?></p>
-                               <p><strong>Tipo:</strong> 
+                                <p><strong>Tipo:</strong> 
                                     <?php 
                                     $tipos = [
                                         'economico' => 'Económico',
@@ -103,7 +155,9 @@ $result = $conexion->query($sql);
                                     ?>
                                 </p>
                                 <p><strong>📍 Ubicación:</strong> <?php echo ucfirst($reserva['ubicacion']); ?></p>
-                                <p><strong>💰 Precio Total:</strong> <span style="color: #28a745; font-weight: bold;">€<?php echo $reserva['precio_total']; ?></span></p>
+                                <p><strong>💰 Precio Total:</strong> 
+                                    <span style="color: #28a745; font-weight: bold;">€<?php echo $reserva['precio_total']; ?></span>
+                                </p>
                                 <p><strong>📊 Estado:</strong> 
                                     <span style="padding: 5px 12px; border-radius: 15px; font-weight: bold; color: #000; background: 
                                         <?php 
@@ -119,9 +173,11 @@ $result = $conexion->query($sql);
                                         <?php echo ucfirst($reserva['estado_reserva']); ?>
                                     </span>
                                 </p>
-                                <?php if ($usuario_rol == 'empleado'): ?>
+
+                                <?php if ($usuario_rol == 'empleado' && isset($reserva['cliente_nombre'])): ?>
                                     <p><strong>👤 Cliente:</strong> <?php echo $reserva['cliente_nombre']; ?></p>
                                 <?php endif; ?>
+
                                 <p><strong>🕒 Creado:</strong> <?php echo $reserva['fecha_creacion']; ?></p>
                             </div>
                         </div>

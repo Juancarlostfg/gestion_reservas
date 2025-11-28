@@ -98,15 +98,54 @@ $usuario_rol = $_SESSION['usuario_rol'];
         </header>
 
         <!-- Hero Section -->
-        <section class="hero">
-            <h1>Nuestra Flota Premium 🚗</h1>
-            <p>Vehículos modernos, perfectamente mantenidos para tu máxima seguridad y confort</p>
-            <div style="margin-top: 20px;">
-                <span style="background: rgba(52, 152, 219, 0.2); color: #3498db; padding: 8px 16px; border-radius: 20px; font-size: 0.9em;">
-                    ✅ Incluye: Seguro completo + Asistencia 24h + Kilometraje ilimitado
-                </span>
-            </div>
-        </section>
+<section class="hero" 
+    style="
+        background-image: url('img/manos.jpg');
+        background-size: cover;
+        background-position: center;
+        border-radius: 14px;
+        height: 260px;
+        position: relative;
+        overflow: hidden;
+    "
+>
+    <!-- Capa oscura encima de la foto -->
+    <div style="
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            rgba(0,0,0,0.35),
+            rgba(0,0,0,0.6)
+        );
+    "></div>
+
+    <!-- Contenido centrado -->
+    <div style="
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        top: 50%;
+        transform: translateY(-50%);
+    ">
+        <!-- Cajita translúcida para que el texto destaque -->
+        <div style="
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 16px;
+            background: rgba(0,0,0,0.45);
+            backdrop-filter: blur(4px);
+        ">
+            <h1 style="margin:0; font-size:28px; color:#ffffff; text-shadow:0 4px 12px rgba(0,0,0,0.9);">
+                Vehículos 🚗
+            </h1>
+            <p style="margin:6px 0 0; color:#e5e7eb; text-shadow:0 3px 8px rgba(0,0,0,0.8);">
+                Consulta nuestra flota disponible
+            </p>
+        </div>
+    </div>
+</section>
+
+
 
         <!-- Filtros -->
         <div class="filter-buttons">
