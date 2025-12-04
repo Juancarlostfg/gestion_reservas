@@ -184,13 +184,17 @@ def generar_pdf(datos, nombre_fichero="informe_reservas.pdf"):
 
 
 def main():
+ def main():
     print("========================================")
     print("  INFORME DE RESERVAS - AUTOS COSTA SOL ")
     print("========================================")
-    input("Pulsa ENTER para generar el informe PDF...")
-
 
     try:
+        import sys
+        # Si se ejecuta en consola interactiva, pedimos ENTER.
+        if sys.stdin.isatty():
+            input("Pulsa ENTER para generar el informe PDF...")
+
         datos = obtener_datos()
         generar_pdf(datos)
         print("\n✅ Informe generado correctamente: informe_reservas.pdf")
@@ -198,7 +202,5 @@ def main():
         print("\n❌ Error al generar el informe:")
         print(e)
 
-
-if __name__ == "__main__":
     main()
 

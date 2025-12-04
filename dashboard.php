@@ -137,21 +137,22 @@ if ($result && $result->num_rows > 0) {
         Autos Costa Sol
       </div>
 
-      <div class="nav-right">
-        <div style="text-align:right; margin-right:8px">
-          <div style="font-size:14px; color:#374151">
-            Bienvenido, <strong><?php echo htmlspecialchars($usuario_nombre); ?></strong>
-          </div>
-          <div style="margin-top:6px">
-            <span class="badge" style="background:#e6f0ff; color:#2563eb">
-              <?php echo $usuario_rol === 'cliente' ? '👤 CLIENTE' : '👨‍💼 EMPLEADO'; ?>
-            </span>
-          </div>
-        </div>
+      <div class="nav-links">
+    <span>Bienvenido, <strong><?php echo $usuario_nombre; ?></strong></span>
 
-        <a href="perfil.php" class="nav-link">👤 Mi Perfil</a>
-        <a href="logout.php" class="btn-logout">Cerrar Sesión</a>
-      </div>
+    <span class="badge" style="background: #3498db; color: white;">
+        <?php echo $usuario_rol == 'cliente' ? '👤 Cliente' : '👨‍💼 Empleado'; ?>
+    </span>
+
+    <a href="perfil.php" class="nav-link">👤 Mi Perfil</a>
+
+    <?php if ($usuario_rol === 'empleado'): ?>
+        <a href="generar_informe.php" class="nav-link">📄 Informe PDF</a>
+    <?php endif; ?>
+
+    <a href="logout.php" class="btn-logout">🚪 Cerrar Sesión</a>
+</div>
+
     </header>
 
     <!-- HERO -->
