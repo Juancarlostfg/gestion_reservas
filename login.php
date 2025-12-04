@@ -109,12 +109,7 @@ if ($_POST) {
                 </button>
             </form>
 
-            <!-- Cuentas de demostración -->
-            <div class="demo-accounts">
-                <h4>👨‍💼 Cuentas de Demo:</h4>
-                <p><strong>Empleado:</strong> empleado@rentacar.com / password</p>
-                <p><strong>Cliente:</strong> Regístrate gratis</p>
-            </div>
+           
 
             <!-- Opciones de navegación -->
             <div class="options-grid">
