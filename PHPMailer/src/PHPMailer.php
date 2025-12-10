@@ -204,6 +204,7 @@ class PHPMailer
      * @var int
      */
     public $WordWrap = 0;
+    
 
     /**
      * Which method to use to send mail.

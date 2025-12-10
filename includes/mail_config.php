@@ -1,14 +1,13 @@
 <?php
-// Configuración SMTP
+// CONFIGURACIÓN SMTP PARA MAILTRAP 
 
-// EJEMPLO con Gmail:
-// - Tienes que activar "Contraseñas de aplicación" en tu cuenta
-// - SMTP_USER = tu correo Gmail
-// - SMTP_PASS = contraseña de aplicación (NO la normal)
+define('SMTP_HOST', 'sandbox.smtp.mailtrap.io');
+define('SMTP_PORT', 587); // recomendado
+define('SMTP_USER', '897155190ae716');
+define('SMTP_PASS', '0d647b447feb06'); 
 
-define('SMTP_HOST', 'smtp.gmail.com');
-define('SMTP_PORT', 587);
-define('SMTP_USER', 'TU_CORREO@gmail.com');      // ← CAMBIA ESTO
-define('SMTP_PASS', 'TU_CONTRASEÑA_APP');        // ← CAMBIA ESTO
-define('SMTP_FROM', 'TU_CORREO@gmail.com');      // Desde
-define('SMTP_FROM_NAME', 'Autos Costa Sol');     // Nombre que verá el cliente
+define('SMTP_FROM', 'noreply@rentacar.local');
+define('SMTP_FROM_NAME', 'Autos Costa Sol');
+
+// Nivel de depuración: 0 = nada, 2 = muestra mensajes SMTP
+define('SMTP_DEBUG', 0);

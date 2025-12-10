@@ -109,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['res
 }
 
 // CARGAR LISTA DE RESERVAS
-// OJO: nombres de columnas según tu tabla: 
+ 
 // id, modelo_vehiculo, detalles_reserva, usuario_id, fecha_inicio, fecha_fin, ubicacion, tipo_vehiculo, estado_reserva, fecha_creacion
 $sql = "SELECT r.id,
                r.modelo_vehiculo,
@@ -155,7 +155,7 @@ $reservas = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
         </header>
 
         <!-- HERO -->
-       <!-- HERO (sustituye el bloque hero anterior) -->
+     
 <section class="hero-gestion" role="img" aria-label="Fondo flota">
   <div class="hero-content">
     <h1>⚙️ Gestión de Reservas</h1>

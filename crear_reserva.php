@@ -2,56 +2,69 @@
 session_start();
 include 'includes/conexion.php';
 
-// ⚠️ CONFIG CORREO
-include 'includes/mail_config.php'; // aquí tienes SMTP_HOST, SMTP_USER, etc.
+// Config correo (Mailtrap u otro) - ya creado por ti
+include 'includes/mail_config.php';
 
-require_once 'phpmailer/src/PHPMailer.php';
-require_once 'phpmailer/src/SMTP.php';
-require_once 'phpmailer/src/Exception.php';
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+// Cargar PHPMailer (rutas relativas a tu proyecto)
+require_once 'PHPMailer/src/PHPMailer.php';
+require_once 'PHPMailer/src/SMTP.php';
+require_once 'PHPMailer/src/Exception.php';
 
 // Función para enviar correo de confirmación
 function enviarCorreoConfirmacion($emailDestino, $nombreDestino, $datosReserva) {
-    $mail = new PHPMailer(true);
+    // usar la clase fully-qualified para evitar problemas con "use" dentro de scope
+    $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
 
     try {
-        // Config SMTP
+        // Configuración SMTP desde includes/mail_config.php
+        $debug = defined('SMTP_DEBUG') ? SMTP_DEBUG : 0;
+        $mail->SMTPDebug = $debug;
         $mail->isSMTP();
-        $mail->Host = SMTP_HOST;
-        $mail->SMTPAuth = true;
-        $mail->Username = SMTP_USER;
-        $mail->Password = SMTP_PASS;
-        $mail->SMTPSecure = 'tls';
-        $mail->Port = SMTP_PORT;
+        $mail->Host       = SMTP_HOST;
+        $mail->SMTPAuth   = true;
+        $mail->Username   = SMTP_USER;
+        $mail->Password   = SMTP_PASS;
+        $mail->SMTPSecure = isset($GLOBALS['SMTP_SECURE']) ? $GLOBALS['SMTP_SECURE'] : 'tls';
+        $mail->Port       = SMTP_PORT;
 
         // Remitente y destinatario
-        $mail->setFrom(SMTP_FROM, SMTP_FROM_NAME);
+        $from = defined('SMTP_FROM') ? SMTP_FROM : SMTP_USER;
+        $from_name = defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'Autos Costa Sol';
+        $mail->setFrom($from, $from_name);
         $mail->addAddress($emailDestino, $nombreDestino);
 
-        // Contenido del mensaje
+        // Contenido
         $mail->isHTML(true);
         $mail->Subject = 'Confirmación de reserva - Autos Costa Sol';
 
-        $body  = "<h2>Hola {$nombreDestino},</h2>";
+        $body  = "<h2>Hola " . htmlspecialchars($nombreDestino) . ",</h2>";
         $body .= "<p>Tu reserva se ha registrado correctamente con los siguientes datos:</p>";
         $body .= "<ul>";
-        $body .= "<li><strong>Vehículo:</strong> {$datosReserva['modelo']}</li>";
-        $body .= "<li><strong>Tipo:</strong> {$datosReserva['tipo']}</li>";
-        $body .= "<li><strong>Fechas:</strong> {$datosReserva['inicio']} al {$datosReserva['fin']}</li>";
-        $body .= "<li><strong>Ubicación:</strong> {$datosReserva['ubicacion']}</li>";
-        $body .= "<li><strong>Precio total:</strong> {$datosReserva['precio']} €</li>";
+        $body .= "<li><strong>Vehículo:</strong> " . htmlspecialchars($datosReserva['modelo']) . "</li>";
+        $body .= "<li><strong>Tipo:</strong> " . htmlspecialchars($datosReserva['tipo']) . "</li>";
+        $body .= "<li><strong>Fechas:</strong> " . htmlspecialchars($datosReserva['inicio']) . " al " . htmlspecialchars($datosReserva['fin']) . "</li>";
+        $body .= "<li><strong>Ubicación:</strong> " . htmlspecialchars($datosReserva['ubicacion']) . "</li>";
+        $body .= "<li><strong>Precio total:</strong> " . htmlspecialchars($datosReserva['precio']) . " €</li>";
         $body .= "</ul>";
         $body .= "<p>Gracias por confiar en Autos Costa Sol.</p>";
+        $body .= "<br><p>🚗 <strong>Autos Costa Sol</strong></p>";
 
-        $mail->Body    = $body;
+        $mail->Body = $body;
         $mail->AltBody = "Reserva confirmada: {$datosReserva['modelo']} del {$datosReserva['inicio']} al {$datosReserva['fin']}. Precio total: {$datosReserva['precio']} €.";
+        // Forzar UTF-8 y usar codificación segura (base64) para el cuerpo
+        $mail->CharSet  = 'UTF-8';
+        $mail->Encoding = 'base64';
+
+        
+        $mail->Body = $body;
+       
 
         $mail->send();
-    } catch (Exception $e) {
-        // Si falla el correo, no rompemos la web
-        // error_log('Error al enviar email: ' . $mail->ErrorInfo);
+        return true;
+    } catch (\PHPMailer\PHPMailer\Exception $e) {
+        // Guardar en el log de PHP para que podamos depurar, sin mostrar al usuario
+        error_log("PHPMailer Error: " . $mail->ErrorInfo . " | Exception: " . $e->getMessage());
+        return false;
     }
 }
 
@@ -61,88 +74,85 @@ if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_rol'] != 'cliente') {
     exit();
 }
 
-// Preseleccionar tipo de vehículo si viene de la página de vehículos
-$tipo_preseleccionado = '';
-$modelo_preseleccionado = '';
-if (isset($_GET['tipo'])) {
-    $tipo_preseleccionado = $_GET['tipo'];
-}
-if (isset($_GET['modelo'])) {
-    $modelo_preseleccionado = $_GET['modelo'];
-}
+// Preselección
+$tipo_preseleccionado = isset($_GET['tipo']) ? $_GET['tipo'] : '';
+$modelo_preseleccionado = isset($_GET['modelo']) ? $_GET['modelo'] : '';
 
 $mensaje = "";
 
 if ($_POST) {
-    $modelo_vehiculo = $_POST['modelo_vehiculo'];
-    $tipo_vehiculo   = $_POST['tipo_vehiculo'];
+    $modelo_vehiculo = trim($_POST['modelo_vehiculo']);
+    $tipo_vehiculo   = trim($_POST['tipo_vehiculo']);
     $fecha_inicio    = $_POST['fecha_inicio'];
     $fecha_fin       = $_POST['fecha_fin'];
-    $ubicacion       = $_POST['ubicacion'];
-    $observaciones   = $_POST['observaciones'];
+    $ubicacion       = trim($_POST['ubicacion']);
+    $observaciones   = trim($_POST['observaciones']);
     $usuario_id      = $_SESSION['usuario_id'];
-    
-    // Calcular días
-    $dias = (strtotime($fecha_fin) - strtotime($fecha_inicio)) / (60 * 60 * 24);
-    if ($dias < 1) {
-        $dias = 1;
-    }
 
-    // Tarifas por tipo
+    // Calcular días (mínimo 1)
+    $dias = (strtotime($fecha_fin) - strtotime($fecha_inicio)) / (60 * 60 * 24);
+    if ($dias < 1) $dias = 1;
+
+    // Precios
     $precios = [
-        'economico' => 30, 
-        'compacto'  => 40, 
-        'sedan'     => 50, 
-        'suv'       => 70, 
+        'economico' => 30,
+        'compacto'  => 40,
+        'sedan'     => 50,
+        'suv'       => 70,
         'lujo'      => 100,
         'deportivo' => 120
     ];
     $precio_dia   = isset($precios[$tipo_vehiculo]) ? $precios[$tipo_vehiculo] : 50;
-    $precio_total = $dias * $precio_dia;
-    
-    // Insert en la base de datos
-    $modelo_vehiculo = $conexion->real_escape_string($modelo_vehiculo);
-    $tipo_vehiculo   = $conexion->real_escape_string($tipo_vehiculo);
-    $ubicacion       = $conexion->real_escape_string($ubicacion);
-    $observaciones   = $conexion->real_escape_string($observaciones);
+    $precio_total = (int)$dias * $precio_dia;
 
-    $sql = "INSERT INTO reservas 
-                (modelo_vehiculo, tipo_vehiculo, fecha_inicio, fecha_fin, ubicacion, observaciones, usuario_id, precio_total) 
-            VALUES 
-                ('$modelo_vehiculo', '$tipo_vehiculo', '$fecha_inicio', '$fecha_fin', '$ubicacion', '$observaciones', $usuario_id, $precio_total)";
-    
-    if ($conexion->query($sql) === TRUE) {
-
-        // Obtener email y nombre del usuario que ha hecho la reserva
-        $resUsuario = $conexion->query("SELECT email, nombre FROM usuarios WHERE id = $usuario_id");
-        $rowUsuario = $resUsuario ? $resUsuario->fetch_assoc() : null;
-
-        if ($rowUsuario) {
-            $emailDestino  = $rowUsuario['email'];
-            $nombreDestino = $rowUsuario['nombre'];
-
-            // Datos para el correo
-            $datosReserva = [
-                'modelo'    => $modelo_vehiculo,
-                'tipo'      => $tipo_vehiculo,
-                'inicio'    => $fecha_inicio,
-                'fin'       => $fecha_fin,
-                'ubicacion' => $ubicacion,
-                'precio'    => $precio_total
-            ];
-
-            // Enviar correo (si falla, la reserva sigue creada)
-            enviarCorreoConfirmacion($emailDestino, $nombreDestino, $datosReserva);
-        }
-
-        $mensaje = "<div style='color: green; padding: 15px; background: #d4edda; border-radius: 5px; border: 1px solid #c3e6cb; margin-bottom: 20px;'>
-                        ✅ <strong>¡Reserva creada exitosamente!</strong><br>
-                        Precio total: <strong>€$precio_total</strong> para $dias días.
+    // Sentencia preparada para insertar la reserva (más segura)
+    $stmt = $conexion->prepare("INSERT INTO reservas (modelo_vehiculo, tipo_vehiculo, fecha_inicio, fecha_fin, ubicacion, observaciones, usuario_id, precio_total) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    if ($stmt === false) {
+        $mensaje = "<div style='color: #721c24; padding: 15px; background: #f8d7da; border-radius: 5px; border: 1px solid #f5c6cb; margin-bottom: 20px;'>
+                        ❌ <strong>Error (prepare):</strong> " . htmlspecialchars($conexion->error) . "
                     </div>";
     } else {
-        $mensaje = "<div style='color: #721c24; padding: 15px; background: #f8d7da; border-radius: 5px; border: 1px solid #f5c6cb; margin-bottom: 20px;'>
-                        ❌ <strong>Error:</strong> " . $conexion->error . "
-                    </div>";
+        // bind params: s = string, i = integer. orden: modelo,tipo,fecha_inicio,fecha_fin,ubicacion,observaciones,usuario_id,precio_total
+        $stmt->bind_param("ssssssii", $modelo_vehiculo, $tipo_vehiculo, $fecha_inicio, $fecha_fin, $ubicacion, $observaciones, $usuario_id, $precio_total);
+
+        if ($stmt->execute()) {
+
+            // Obtener email y nombre del usuario que ha hecho la reserva
+            $resUsuario = $conexion->query("SELECT email, nombre FROM usuarios WHERE id = " . (int)$usuario_id);
+            $rowUsuario = $resUsuario ? $resUsuario->fetch_assoc() : null;
+
+            if ($rowUsuario) {
+                $emailDestino  = $rowUsuario['email'];
+                $nombreDestino = $rowUsuario['nombre'];
+
+                // Datos para el correo
+                $datosReserva = [
+                    'modelo'    => $modelo_vehiculo,
+                    'tipo'      => $tipo_vehiculo,
+                    'inicio'    => $fecha_inicio,
+                    'fin'       => $fecha_fin,
+                    'ubicacion' => $ubicacion,
+                    'precio'    => $precio_total
+                ];
+
+                // Intentar enviar el correo (si falla, no se rompe la aplicación)
+                $envio = enviarCorreoConfirmacion($emailDestino, $nombreDestino, $datosReserva);
+                if (! $envio) {
+                    // opcional: añadir aviso en pantalla (breve) o solo log
+                    error_log("No se pudo enviar email de confirmación a $emailDestino");
+                }
+            }
+
+            $mensaje = "<div style='color: green; padding: 15px; background: #d4edda; border-radius: 5px; border: 1px solid #c3e6cb; margin-bottom: 20px;'>
+                            ✅ <strong>¡Reserva creada exitosamente!</strong><br>
+                            Precio total: <strong>€" . htmlspecialchars($precio_total) . "</strong> para " . htmlspecialchars($dias) . " días.
+                        </div>";
+        } else {
+            $mensaje = "<div style='color: #721c24; padding: 15px; background: #f8d7da; border-radius: 5px; border: 1px solid #f5c6cb; margin-bottom: 20px;'>
+                            ❌ <strong>Error (execute):</strong> " . htmlspecialchars($stmt->error) . "
+                        </div>";
+        }
+        $stmt->close();
     }
 }
 
@@ -225,7 +235,7 @@ $fecha_manana = date('Y-m-d', strtotime('+1 day'));
         <div class="form-container">
             <form method="post" id="formReserva">
                 <div class="form-group">
-                    <label for="modelo_vehiculo">🚗 Modelo del Vehículo:</label>
+                    <label for="modelo_vehiculo">🚗 Modelo preferido de Vehículo:</label>
                     <input type="text" id="modelo_vehiculo" name="modelo_vehiculo" 
                            placeholder="Ej: Toyota Corolla, BMW X3, Audi TT..." 
                            required

@@ -162,7 +162,7 @@ if ($result && $result->num_rows > 0) {
           <h1>¡Bienvenido a Autos Costa Sol! 🌅</h1>
           <p>
             <?php if ($usuario_rol === 'cliente'): ?>
-              Gestiona fácilmente tus reservas y tu perfil
+              Reservar el vehículo para tus vacaciones nunca fue más fácil
             <?php else: ?>
               Panel de gestión de reservas, clientes y vehículos
             <?php endif; ?>
