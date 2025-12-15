@@ -38,7 +38,7 @@ if ($result && $result->num_rows > 0) {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Dashboard - Autos Costa Sol</title>
+  <title>Inicio - Autos Costa Sol</title>
 
   <!-- Fuente moderna -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
