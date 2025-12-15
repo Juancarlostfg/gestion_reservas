@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-// Solo empleados
+// empleados solamente
 if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_rol'] !== 'empleado') {
     header("Location: login.php");
     exit();
